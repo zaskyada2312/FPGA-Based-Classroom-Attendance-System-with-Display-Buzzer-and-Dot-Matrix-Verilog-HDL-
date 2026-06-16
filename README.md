@@ -1,0 +1,2 @@
+# FPGA-Based-Classroom-Attendance-System-with-Display-Buzzer-and-Dot-Matrix-Verilog-HDL-
+Sistem ini merupakan implementasi desain FPGA berbasis Verilog HDL untuk sistem presensi kelas. Terdapat modul counter masuk/keluar, deteksi edge, debounce, serta indikator status ruangan (AMAN, HALF, FULL). Output berupa 7-segmen, LED, buzzer, dan dot matrix running text. Top module mengintegrasikan seluruh sistem untuk simulasi FPGA. Sistem. OK.
