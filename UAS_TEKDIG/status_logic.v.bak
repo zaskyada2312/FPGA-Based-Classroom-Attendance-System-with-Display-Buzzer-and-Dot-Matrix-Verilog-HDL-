@@ -1,0 +1,36 @@
+// ============================================================
+// File   : status_logic.v
+// Fungsi : Menentukan status ruangan dan LED indikator
+//
+// 0 - 9   = AMAN
+// 10 - 19 = HALF
+// 20      = FULL
+// ============================================================
+
+module status_logic (
+    input  wire [5:0] count,
+    output reg  [1:0] status,
+    output reg  led_aman,
+    output reg  led_half,
+    output reg  led_full
+);
+
+    always @(*) begin
+        status = 2'd0;
+        led_aman = 1'b0;
+        led_half = 1'b0;
+        led_full = 1'b0;
+
+        if (count < 10) begin
+            status = 2'd0;
+            led_aman = 1'b1;
+        end else if (count < 20) begin
+            status = 2'd1;
+            led_half = 1'b1;
+        end else begin
+            status = 2'd2;
+            led_full = 1'b1;
+        end
+    end
+
+endmodule

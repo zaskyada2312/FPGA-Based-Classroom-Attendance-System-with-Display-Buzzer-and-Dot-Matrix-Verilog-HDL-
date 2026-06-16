@@ -1,0 +1,109 @@
+module seven_segment_multiplex #(
+    parameter CLK_FREQ = 50000000
+)(
+    input  wire clk,
+    input  wire rst_n,
+    input  wire [5:0] count,
+
+    output reg  [7:0] seg,
+    output reg  [3:0] dig
+);
+
+    // Refresh sekitar 1 kHz
+    localparam integer REFRESH_DIV = CLK_FREQ / 4000;
+
+    reg [31:0] refresh_counter;
+    reg [1:0] digit_select;
+
+    reg [3:0] tens;
+    reg [3:0] ones;
+    reg [3:0] current_digit;
+
+    // Memisahkan puluhan dan satuan
+    always @(*) begin
+        if (count >= 20) begin
+            tens = 4'd2;
+            ones = 4'd0;
+        end else if (count >= 10) begin
+            tens = 4'd1;
+            ones = count - 10;
+        end else begin
+            tens = 4'd0;
+            ones = count[3:0];
+        end
+    end
+
+    // Counter refresh digit
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            refresh_counter <= 32'd0;
+            digit_select <= 2'd0;
+        end else begin
+            if (refresh_counter >= REFRESH_DIV) begin
+                refresh_counter <= 32'd0;
+                digit_select <= digit_select + 1'b1;
+            end else begin
+                refresh_counter <= refresh_counter + 1'b1;
+            end
+        end
+    end
+
+    // Pilih digit yang aktif
+    always @(*) begin
+        // Default semua digit mati
+        dig = 4'b1111;
+        current_digit = 4'd0;
+
+        case (digit_select)
+            2'd0: begin
+                // Digit satuan
+                dig = 4'b1110;
+                current_digit = ones;
+            end
+
+            2'd1: begin
+                // Digit puluhan
+                dig = 4'b1101;
+                current_digit = tens;
+            end
+
+            2'd2: begin
+                // Digit ratusan dimatikan
+                dig = 4'b1011;
+                current_digit = 4'd10; // blank
+            end
+
+            2'd3: begin
+                // Digit ribuan dimatikan
+                dig = 4'b0111;
+                current_digit = 4'd10; // blank
+            end
+
+            default: begin
+                dig = 4'b1111;
+                current_digit = 4'd10;
+            end
+        endcase
+    end
+
+    // Decoder angka ke segment
+    always @(*) begin
+        case (current_digit)
+            4'd0: seg[6:0] = 7'b0000001;
+            4'd1: seg[6:0] = 7'b1001111;
+            4'd2: seg[6:0] = 7'b0010010;
+            4'd3: seg[6:0] = 7'b0000110;
+            4'd4: seg[6:0] = 7'b1001100;
+            4'd5: seg[6:0] = 7'b0100100;
+            4'd6: seg[6:0] = 7'b0100000;
+            4'd7: seg[6:0] = 7'b0001111;
+            4'd8: seg[6:0] = 7'b0000000;
+            4'd9: seg[6:0] = 7'b0000100;
+            default: seg[6:0] = 7'b1111111; // blank
+        endcase
+
+        // DP mati, aktif LOW
+        seg[7] = 1'b1;
+    end
+
+endmodule
